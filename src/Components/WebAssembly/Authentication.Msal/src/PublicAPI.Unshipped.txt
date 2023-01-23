@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions.UseChromeWebAuthFlow.get -> bool
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions.UseChromeWebAuthFlow.set -> void

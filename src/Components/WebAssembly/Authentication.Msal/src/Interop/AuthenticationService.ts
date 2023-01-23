@@ -95,6 +95,7 @@ interface AuthorizeServiceConfiguration extends Msal.Configuration {
     defaultAccessTokenScopes: string[];
     additionalScopesToConsent: string[];
     loginMode: string;
+    useChromeWebAuthFlow: boolean;
 }
 
 class MsalAuthorizeService implements AuthorizeService {
@@ -268,6 +269,38 @@ class MsalAuthorizeService implements AuthorizeService {
     private async signInWithRedirect(request: Msal.RedirectRequest) {
         try {
             this.debug('Starting sign-in redirect.');
+
+            if (this._settings.useChromeWebAuthFlow) {
+                const redirectResult = await new Promise((resolve, reject) => {
+                    this._msalApplication.loginRedirect({
+                        ...request,
+                        onRedirectNavigate: (url) => {
+                            resolve(url);
+                            return false;
+                        }
+                    }).catch(reject);
+                });
+
+                const loginUrl = redirectResult as string;
+
+                if (loginUrl) {
+                    return await new Promise((resolve, reject) => {
+                        chrome.identity.launchWebAuthFlow({
+                            interactive: true,
+                            url: loginUrl
+                        }, (responseUrl) => {
+                            if (responseUrl?.includes("#")) {
+                                this._msalApplication.handleRedirectPromise(`#${responseUrl.split("#")[1]}`)
+                                    .then(resolve)
+                                    .catch(reject)
+                            } else {
+                                resolve(null);
+                            }
+                        })
+                    })
+                }
+            }
+
             return await this._msalApplication.loginRedirect(request);
         } catch (e) {
             this.debug(`Sign-in redirect failed: '${(e as Error).message}'.`);

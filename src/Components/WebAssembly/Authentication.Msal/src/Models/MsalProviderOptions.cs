@@ -48,4 +48,10 @@ public class MsalProviderOptions
     /// </summary>
     /// <value>Defaults to <c>popup</c></value>
     public string LoginMode { get; set; } = "popup";
+
+    /// <summary>
+    /// Gets or sets the flag that triggers authentication with the Chrome identity authentication flow.
+    /// </summary>
+    /// <value>Defaults to <c>false</c></value>
+    public bool UseChromeWebAuthFlow { get; set; }
 }
